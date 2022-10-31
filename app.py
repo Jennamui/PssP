@@ -1,7 +1,9 @@
+from types import CoroutineType
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
+
 
 load_dotenv()
 
@@ -12,7 +14,7 @@ mysql_host = os.getenv("MYSQL_HOST")
 db = SQLAlchemy()
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://' + mysql_username + ':' + mysql_password + '@' + mysql_host + ':3306/patient_portal'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://' + mysql_username + ':' + mysql_password + '@' + mysql_host + ':3306/patient_portal'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'sdf#$#dfjkhdf0SDJH0df9fd98343fdfu34rf'
 
@@ -29,14 +31,20 @@ class Patients(db.Model):
     last_name = db.Column(db.String(255))
     zip_code = db.Column(db.String(255), nullable=True)
     gender = db.Column(db.String(255), nullable=True)
+    city = db.Column(db.String(255), nullable=True)
+    state = db.Column(db.String(255), nullable=True)
+    phone_number = db.Column(db.String(255), nullable=True)
 
     # this first function __init__ is to establish the class for python GUI
-    def __init__(self, mrn, first_name, last_name, zip_code, gender):
+    def __init__(self, mrn, first_name, last_name, zip_code, gender, city, state, phone_number):
         self.mrn = mrn
         self.first_name = first_name
         self.last_name = last_name
         self.zip_code = zip_code
         self.gender = gender
+        self.city = city 
+        self.state = state
+        self.phone_number = phone_number
 
     # this second function is for the API endpoints to return JSON 
     def to_json(self):
@@ -46,7 +54,10 @@ class Patients(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'zip_code': self.zip_code,
-            'gender': self.gender
+            'gender': self.gender,
+            'city': self.city,
+            'state': self.state,
+            'phone_number': self.phone_number
         }
 
 class Conditions_patient(db.Model):
@@ -157,7 +168,10 @@ def insert(): # note this function needs to match name in html form action
         last_name = request.form['last_name']
         gender = request.form['gender']
         zip_code = request.form['zip_code']
-        new_patient = Patients(mrn, first_name, last_name, gender, zip_code)
+        city = request.form['city']
+        state = request.form['state']
+        phone_number = request.form['phone_number']
+        new_patient = Patients(mrn, first_name, last_name, gender, zip_code, city, state, phone_number)
         db.session.add(new_patient)
         db.session.commit()
         flash("Patient Inserted Successfully")
@@ -176,6 +190,9 @@ def update(): # note this function needs to match name in html form action
         patient.first_name = request.form.get('first_name')
         patient.last_name = request.form.get('last_name')
         patient.gender = request.form.get('gender')
+        patient.city = request.form.get('city')
+        patient.state = request.form.get('state')
+        patient.phone_number = request.form.get('phone_number')
         db.session.commit()
         flash("Patient Updated Successfully")
         return redirect(url_for('get_gui_patients'))
