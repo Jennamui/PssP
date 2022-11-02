@@ -190,6 +190,7 @@ def update(): # note this function needs to match name in html form action
         patient.first_name = request.form.get('first_name')
         patient.last_name = request.form.get('last_name')
         patient.gender = request.form.get('gender')
+        patient.zip_code = request.form.get('zip_code')
         patient.city = request.form.get('city')
         patient.state = request.form.get('state')
         patient.phone_number = request.form.get('phone_number')
